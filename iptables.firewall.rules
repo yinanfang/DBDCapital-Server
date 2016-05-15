@@ -1,0 +1,65 @@
+# iptables rules
+# Reference: 
+#   https://gist.github.com/virtualstaticvoid/1024546
+#   https://gist.github.com/jirutka/3742890
+#   https://github.com/bmaeser/iptables-boilerplate
+
+*filter
+
+# 2. Set default chain policies
+-P INPUT DROP
+-P FORWARD DROP
+-P OUTPUT DROP
+
+# 4. Allow ALL incoming SSH
+-A INPUT -p tcp --dport 666 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A OUTPUT -p tcp --sport 666 -m state --state ESTABLISHED -j ACCEPT
+
+# 6. Allow incoming HTTP
+-A INPUT -i eth0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A OUTPUT -o eth0 -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
+
+# Allow incoming HTTPS
+-A INPUT -i eth0 -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A OUTPUT -o eth0 -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
+
+# 10. Allow outgoing HTTP
+-A OUTPUT -o eth0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -i eth0 -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
+
+# Allow outgoing HTTPS
+-A OUTPUT -o eth0 -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -i eth0 -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
+
+# 12. Ping from inside to outside
+-A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+-A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+# 13. Ping from outside to inside
+-A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+-A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+# 14. Allow loopback access
+-A INPUT -i lo -j ACCEPT
+-A OUTPUT -o lo -j ACCEPT
+
+# 16. Allow outbound DNS
+-A OUTPUT -p udp -o eth0 --dport 53 -j ACCEPT
+-A INPUT -p udp -i eth0 --sport 53 -j ACCEPT
+
+# 20. Allow outgoing Sendmail or Postfix
+-A OUTPUT -p tcp --dport 25 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -p tcp --sport 25 -m state --state ESTABLISHED -j ACCEPT
+#-A INPUT -i eth0 -p tcp --dport 587 -m state --state NEW,ESTABLISHED -j ACCEPT
+#-A OUTPUT -o eth0 -p tcp --sport 587 -m state --state ESTABLISHED -j ACCEPT
+
+# 23. Prevent DoS attack
+-A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
+
+# 25. Log dropped packets
+-N LOGGING
+-A INPUT -j LOGGING
+-A LOGGING -m limit --limit 2/min -j LOG --log-prefix "IPTables Packet Dropped: " --log-level 7
+-A LOGGING -j DROP
+
+COMMIT
