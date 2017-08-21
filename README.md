@@ -2,8 +2,15 @@
 
 ## Server setup
 - Provider: DigitalOcean
+  - Global Installation
+```shell
+    # Install
+    sudo apt-get install -y build-essential checkinstall zsh htop python
+    npm install -g nodemon pm2 babel-cli
+```
+
 - Tutorial:
-  - http://feross.org/how-to-setup-your-linode//
+  - http://feross.org/how-to-setup-your-linode/
 - Tips
   - See listening ports
     - `netstat -tulpn`
@@ -20,7 +27,7 @@
       - https://gist.github.com/virtualstaticvoid/1024546
       - https://gist.github.com/jirutka/3742890
   - fail2ban
-    - start in debug mode: `/usr/bin/fail2ban-client -v -v start`
+    - start in debug mode: `/usr/bin/fail2ban-client -v start`
   - scp
     - Local to remote: `scp -P [port] /local/file [user]@[your_ip_address]:/remote/path`
     - Remote to local: `scp -P [port] [user]@[your_ip_address]:/remote/file/path /local/path`
